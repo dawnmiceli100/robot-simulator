@@ -47,7 +47,6 @@ class Robot
 end 
 
 class Simulator
-  attr_reader :instructions
 
   MOVEMENTS = { "L" => :turn_left, "R" => :turn_right, "A" => :advance}
 
