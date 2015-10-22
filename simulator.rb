@@ -72,6 +72,8 @@ class Simulator
     move_robot(robot, @instructions_list)
   end 
 
+  private
+  
   def move_robot(robot, instructions_list) 
     instructions_list.each do |instruction|
       robot.send(instruction)
