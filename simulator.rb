@@ -1,15 +1,10 @@
 class Robot
-  attr_reader :bearing, :coordinates
+  attr_reader :bearing
 
-  DIRECTIONS = [:north, :east, :south, :west]
-
-  def initialize
-    @bearing = ''
-    @coordinates = [0, 0]
-  end 
+  ORDERED_DIRECTIONS = [:north, :east, :south, :west]
 
   def orient(direction)
-    if DIRECTIONS.include?(direction)
+    if ORDERED_DIRECTIONS.include?(direction)
       @bearing = direction
     else
       raise ArgumentError.new("invalid direction given")
@@ -17,31 +12,32 @@ class Robot
   end 
 
   def turn_right
-    new_bearing_idx = DIRECTIONS.index(@bearing) + 1
-    new_bearing_idx = 0 if new_bearing_idx == 4
-    self.orient(DIRECTIONS.at(new_bearing_idx))
+    new_bearing_idx = ORDERED_DIRECTIONS.index(@bearing) + 1
+    new_bearing_idx = 0 if new_bearing_idx == ORDERED_DIRECTIONS.length
+    self.orient(ORDERED_DIRECTIONS.at(new_bearing_idx))
   end  
 
   def turn_left
-    new_bearing_idx = DIRECTIONS.index(@bearing) - 1
-    new_bearing_idx = 3 if new_bearing_idx == -1
-    self.orient(DIRECTIONS.at(new_bearing_idx))
+    new_bearing_idx = ORDERED_DIRECTIONS.index(@bearing) - 1
+    new_bearing_idx = ORDERED_DIRECTIONS.length - 1 if new_bearing_idx == -1
+    self.orient(ORDERED_DIRECTIONS.at(new_bearing_idx))
   end 
 
   def at(x, y) 
-    @coordinates = [x, y]
+    @x = x
+    @y = y
   end 
+
+  def coordinates
+    [@x, @y]
+  end  
 
   def advance
     case @bearing
-    when :north
-      self.at(@coordinates[0], @coordinates[1] + 1)
-    when :south 
-      self.at(@coordinates[0], @coordinates[1] - 1) 
-    when :east
-      self.at(@coordinates[0] + 1, @coordinates[1])
-    when :west
-      self.at(@coordinates[0] - 1, @coordinates[1]) 
+    when :north then @y += 1
+    when :south then @y -= 1
+    when :east then @x += 1
+    when :west then @x -= 1
     end     
   end 
 end 
@@ -50,16 +46,8 @@ class Simulator
 
   MOVEMENTS = { "L" => :turn_left, "R" => :turn_right, "A" => :advance}
 
-  def initialize
-    @instructions_list = []
-  end  
-
   def instructions(commands)
-    @instructions_list = []
-    commands.each_char do |command|
-      @instructions_list << MOVEMENTS[command]
-    end 
-    return @instructions_list 
+    commands.each_char.map { |command| MOVEMENTS[command] }
   end 
 
   def place(robot, placement = {})
@@ -68,15 +56,12 @@ class Simulator
   end 
 
   def evaluate(robot, commands) 
-    @instructions_list = instructions(commands)
-    move_robot(robot, @instructions_list)
+    instructions(commands).each { |instruction| move_robot(robot, instruction) }
   end 
 
   private
   
-  def move_robot(robot, instructions_list) 
-    instructions_list.each do |instruction|
+  def move_robot(robot, instruction) 
       robot.send(instruction)
-    end
   end    
 end 
